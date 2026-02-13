@@ -2308,7 +2308,7 @@ function QuoteDashboard() {
                             }
                         ]);
                     } catch (error) {
-                        /* eslint-disable */ console.error(...oo_tx(`1704934769_34_8_34_54_11`, "Error fetching quotes:", error));
+                        /* eslint-disable */ console.error(...oo_tx(`3713129884_34_8_34_54_11`, "Error fetching quotes:", error));
                         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["toast"].error("Failed to load quotes");
                     } finally{
                         setIsLoading(false);
@@ -2819,17 +2819,17 @@ function QuoteDashboard() {
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex-1 h-full overflow-auto bg-slate-50 p-4 custom-scrollbar",
+                            className: "flex h-full overflow-auto bg-slate-50 p-4 custom-scrollbar",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 ref: exportRef,
                                 className: "mx-auto min-w-fit max-w-full p-8 bg-slate-50 rounded-2xl",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex flex-col gap-12",
+                                    className: "flex flex-col gap-4",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex flex-wrap justify-center gap-10",
+                                            className: "flex flex-cols justify-center -gap-10",
                                             children: activeQuotes.map((q, idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "w-[700px] shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-500",
+                                                    className: "w-[510px] shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-500",
                                                     style: {
                                                         animationDelay: `${idx * 100}ms`,
                                                         transform: "scale(0.5)",

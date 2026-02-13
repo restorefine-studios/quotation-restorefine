@@ -244,15 +244,15 @@ export function QuoteDashboard() {
           </div>
 
           {/* Preview Canvas */}
-          <div className="flex-1 h-full overflow-auto bg-slate-50 p-4 custom-scrollbar">
+          <div className="flex h-full overflow-auto bg-slate-50 p-4 custom-scrollbar">
             <div ref={exportRef} className="mx-auto min-w-fit max-w-full p-8 bg-slate-50 rounded-2xl">
-              <div className="flex flex-col gap-12">
+              <div className="flex flex-col gap-4">
                 {/* Package Cards View */}
-                <div className="flex flex-wrap justify-center gap-10">
+                <div className="flex flex-cols justify-center -gap-10">
                   {activeQuotes.map((q, idx) => (
                     <div
                       key={q.id || idx}
-                      className="w-[700px] shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                      className="w-[510px] shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
                       style={{
                         animationDelay: `${idx * 100}ms`,
                         transform: "scale(0.5)",

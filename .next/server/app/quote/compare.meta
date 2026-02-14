@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/quote/layout,_N_T_/quote/compare/layout,_N_T_/quote/compare/page,_N_T_/quote/compare"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/quote/compare/__PAGE__",
+    "/quote/compare",
+    "/quote",
+    "/_index",
+    "/_head"
+  ]
+}

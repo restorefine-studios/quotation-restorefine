@@ -12,15 +12,13 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
     <div
       ref={ref}
       className="w-[900px] rounded-b-[4rem] mx-auto text-slate-900 shadow-2xl font-sans flex flex-col relative"
-      style={{ minHeight: "950px" }} // Increased height for full content, edit width here next time
+      style={{ height: "1650px" }} // Fixed constant height
     >
       {/* Texture Overlay for Premium Feel */}
       <div className="absolute bg-none  inset-0 opacity-5 pointer-events-auto bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
       {/* 1. Header Section */}
       <div className="bg-black  rounded-t-[50px]  p-12 pb-24 relative overflow-hidden shrink-0">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-200/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px]" />
-
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
@@ -32,8 +30,13 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                 <p className="text-red-500 text-xs font-black uppercase tracking-[0.3em]">Restaurant Growth</p> */}
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Prepared For</p>
+            <div className="text-right flex flex-col items-end gap-2">
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Prepared For</p>
+              {quote.clientLogo && (
+                <div className="w-24 h-16 relative mb-2">
+                  <Image src={quote.clientLogo} alt="Client Logo" fill className="object-contain" />
+                </div>
+              )}
               <h2 className="text-white text-2xl font-black tracking-tight underline decoration-red-600/30 underline-offset-8">{quote.clientName || "Valued Partner"}</h2>
             </div>
           </div>

@@ -1,0 +1,83 @@
+// Prisma schema for RestoRefine Quote Management System
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String    // bcrypt hashed password
+  name          String?   // Optional display name
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  quotes        Quote[]
+  sessions      Session[]
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique  // Secure random token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model Quote {
+  id                      String    @id @default(cuid())
+  userId                  String
+
+  // Client Information
+  clientName              String
+  clientLogo              String?   @db.Text  // Base64 or URL
+
+  // Package Details
+  packageName             String
+  subtitle                String
+
+  // Content Deliverables
+  videoCount              Int       @default(0)
+  photoCount              Int       @default(0)
+  showVideos              Boolean   @default(true)
+  showPhotos              Boolean   @default(true)
+
+  // Platforms & Add-ons (JSON arrays)
+  platforms               Json      // String[]
+  addOns                  Json      // String[]
+
+  // Pricing
+  price                   String
+
+  // CTA Configuration
+  ctaTitle                String
+  ctaText                 String
+  ctaHighlight            String
+  ctaHighlightColor       String    @default("#EF4444")
+  ctaHighlightUnderline   Boolean   @default(true)
+  ctaFooter               String
+
+  // Metadata
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Relations
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}

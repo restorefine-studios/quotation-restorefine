@@ -1,6 +1,7 @@
 export interface QuoteData {
   id?: string
   clientName: string
+  clientLogo?: string
   packageName: string
   subtitle: string
   videoCount: number
@@ -16,6 +17,8 @@ export interface QuoteData {
   ctaHighlightColor: string
   ctaHighlightUnderline: boolean
   ctaFooter: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export const PLATFORMS = ['Instagram', 'TikTok']

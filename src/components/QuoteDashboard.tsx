@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function QuoteDashboard() {
   const { logout } = useAuth();
-  const [activeQuotes, setActiveQuotes] = useState<QuoteData[]>([]);
+  const [activeQuotes, setActiveQuotes] = useState<QuoteData[]>([{ ...DEFAULT_QUOTE }]);
   const [activeTab, setActiveTab] = useState<string>("0");
   const [showComparison, setShowComparison] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

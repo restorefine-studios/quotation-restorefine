@@ -11,6 +11,12 @@ export interface QuoteData {
   platforms: string[]
   addOns: string[]
   price: string
+  priceSubtext: string
+  initialTerm: string
+  initialTermLabel: string
+  exitNotice: string
+  exitNoticeLabel: string
+  showManagement: boolean
   ctaTitle: string
   ctaText: string
   ctaHighlight: string
@@ -41,6 +47,12 @@ export const DEFAULT_QUOTE: QuoteData = {
   platforms: ['Instagram', 'TikTok'],
   addOns: ['Drone footage', 'Paid ads'],
   price: '995',
+  priceSubtext: 'Billed monthly in advance',
+  initialTerm: '3 Months',
+  initialTermLabel: 'Initial Term',
+  exitNotice: '30 Days',
+  exitNoticeLabel: 'Exit Notice',
+  showManagement: true,
   ctaTitle: 'Ready to Start?',
   ctaText: 'Reply GO to activate',
   ctaHighlight: 'GO',

@@ -65,7 +65,7 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                 <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/20">
                   <Video size={28} />
                 </div>
-                <span className="text-slate-400 font-black uppercase text-[10px] tracking-widest">Video Production</span>
+                <span className="text-slate-400 font-black uppercase text-[12px] tracking-widest">Video Production</span>
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
@@ -86,7 +86,7 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                 <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/20">
                   <Camera size={28} />
                 </div>
-                <span className="text-slate-400 font-black uppercase text-[10px] tracking-widest">Photography</span>
+                <span className="text-slate-400 font-black uppercase text-[12px] tracking-widest">Photography</span>
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
@@ -116,28 +116,29 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
             </div>
           </div>
           <div className="space-y-6">
-            <h3 className="text-slate-400 text-lg font-extrabold uppercase tracking-[0.2em] flex items-center gap-2">
-              {/* <div className="w-6 h-[2px] bg-red-600" /> */}
-              Fully Managed Services
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 text-lg text-slate-700 font-semibold ">
-                <CheckCircle2 size={16} className="text-red-600" />
-                Posting
+            <h3 className="text-slate-400 text-lg font-extrabold uppercase tracking-[0.2em] flex items-center gap-2">{quote.showManagement !== false ? "Fully Managed Services" : "Management"}</h3>
+            {quote.showManagement !== false ? (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 text-lg text-slate-700 font-semibold ">
+                  <CheckCircle2 size={16} className="text-red-600" />
+                  Posting
+                </div>
+                <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
+                  <CheckCircle2 size={16} className="text-red-600" />
+                  Captions
+                </div>
+                <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
+                  <CheckCircle2 size={16} className="text-red-600" />
+                  Hashtags
+                </div>
+                <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
+                  <CheckCircle2 size={16} className="text-red-600" />
+                  Analytics
+                </div>
               </div>
-              <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
-                <CheckCircle2 size={16} className="text-red-600" />
-                Captions
-              </div>
-              <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
-                <CheckCircle2 size={16} className="text-red-600" />
-                Hashtags
-              </div>
-              <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
-                <CheckCircle2 size={16} className="text-red-600" />
-                Analytics
-              </div>
-            </div>
+            ) : (
+              <p className="text-slate-400 text-base font-semibold italic">Management not included in this package</p>
+            )}
           </div>
         </div>
 
@@ -174,7 +175,7 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                 <span className="text-8xl font-black text-red-600 tracking-tighter drop-shadow-lg">£{quote.price}</span>
                 <span className="text-white text-2xl font-black italic">/ month</span>
               </div>
-              <p className="text-slate-400 text-sm font-black mt-2 tracking-widest uppercase">Billed monthly in advance</p>
+              <p className="text-slate-400 text-sm font-black mt-2 tracking-widest uppercase">{quote.priceSubtext || "Billed monthly in advance"}</p>
             </div>
 
             <div className="flex flex-col gap-5 bg-white/10 backdrop-blur-xl p-8 rounded-[3rem] border border-white/10 min-w-[600px]">
@@ -183,13 +184,13 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
               </div>
               <div className="flex gap-10">
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-sm font-black uppercase tracking-widest">Initial Term</p>
-                  <p className="text-white text-2xl font-black">3 Months</p>
+                  <p className="text-slate-400 text-sm font-black uppercase tracking-widest">{quote.initialTermLabel || "Initial Term"}</p>
+                  <p className="text-white text-2xl font-black">{quote.initialTerm || "3 Months"}</p>
                 </div>
                 <div className="w-px h-12 bg-white/10" />
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-sm font-black uppercase tracking-widest">Exit Notice</p>
-                  <p className="text-white text-2xl font-black">30 Days</p>
+                  <p className="text-slate-400 text-sm font-black uppercase tracking-widest">{quote.exitNoticeLabel || "Exit Notice"}</p>
+                  <p className="text-white text-2xl font-black">{quote.exitNotice || "30 Days"}</p>
                 </div>
               </div>
               <p className="text-[10px] text-slate-500 font-bold italic">Monthly rolling agreement thereafter.</p>

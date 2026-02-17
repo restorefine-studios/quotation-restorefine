@@ -62,6 +62,14 @@ model Quote {
 
   // Pricing
   price                   String
+  priceSubtext            String    @default("Billed monthly in advance")
+  initialTerm             String    @default("3 Months")
+  initialTermLabel        String    @default("Initial Term")
+  exitNotice              String    @default("30 Days")
+  exitNoticeLabel         String    @default("Exit Notice")
+
+  // Management
+  showManagement          Boolean   @default(true)
 
   // CTA Configuration
   ctaTitle                String

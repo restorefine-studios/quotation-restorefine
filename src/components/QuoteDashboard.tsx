@@ -59,7 +59,13 @@ export function QuoteDashboard() {
       return;
     }
 
-    const newQuoteData = { ...DEFAULT_QUOTE, packageName: `Package ${activeQuotes.length + 1}` };
+    const currentQuote = activeQuotes[0];
+    const newQuoteData = {
+      ...DEFAULT_QUOTE,
+      packageName: `Package ${activeQuotes.length + 1}`,
+      clientName: currentQuote?.clientName || DEFAULT_QUOTE.clientName,
+      clientLogo: currentQuote?.clientLogo,
+    };
     setActiveQuotes([...activeQuotes, { ...newQuoteData }]);
     setActiveTab(activeQuotes.length.toString());
     toast.success("New package added");
@@ -130,24 +136,24 @@ export function QuoteDashboard() {
 
   const handleShareLink = () => {
     // Check if all quotes are saved
-    const unsavedQuotes = activeQuotes.filter(q => !q.id);
+    const unsavedQuotes = activeQuotes.filter((q) => !q.id);
     if (unsavedQuotes.length > 0) {
       toast.error("Please save all quotes first before sharing");
       return;
     }
 
     // Get all quote IDs and create comparison URL
-    const quoteIds = activeQuotes.map(q => q.id).join(',');
+    const quoteIds = activeQuotes.map((q) => q.id).join(",");
     const shareUrl = `${window.location.origin}/quote/compare?ids=${quoteIds}`;
 
     // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(
       () => {
-        toast.success(`Share link copied! Includes ${activeQuotes.length} package${activeQuotes.length > 1 ? 's' : ''}`);
+        toast.success(`Share link copied! Includes ${activeQuotes.length} package${activeQuotes.length > 1 ? "s" : ""}`);
       },
       () => {
         toast.error("Failed to copy link");
-      }
+      },
     );
   };
 
@@ -254,9 +260,9 @@ export function QuoteDashboard() {
       node.style.visibility = "visible";
 
       const dataUrl = await toPng(node, {
-        backgroundColor: "#ffffff",
-        pixelRatio: 4,
-        quality: 1,
+        backgroundColor: "#f8fafc",
+        pixelRatio: 2,
+        quality: 0.92,
         width: exportWidth,
         height: exportHeight,
       });
@@ -322,18 +328,77 @@ export function QuoteDashboard() {
     }
   };
 
+  const captureElement = async (el: HTMLElement, originalTransform: string, originalMarginBottom: string) => {
+    // Save and reset styles for clean capture
+    const parent = el.parentElement;
+    const origParentOverflow = parent?.style.overflow || "";
+    const origElOverflow = el.style.overflow;
+    const origElHeight = el.style.height;
+
+    el.style.transition = "none";
+    el.style.transform = "none";
+    el.style.marginBottom = "0";
+    el.style.overflow = "visible";
+    el.style.height = "auto";
+    if (parent) parent.style.overflow = "visible";
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const dataUrl = await toPng(el, {
+      backgroundColor: "#f8fafc",
+      pixelRatio: 1.5,
+      quality: 0.92,
+      height: el.scrollHeight,
+      width: el.scrollWidth,
+    });
+
+    // Restore original styles
+    el.style.transition = "";
+    el.style.transform = originalTransform;
+    el.style.marginBottom = originalMarginBottom;
+    el.style.overflow = origElOverflow;
+    el.style.height = origElHeight;
+    if (parent) parent.style.overflow = origParentOverflow;
+
+    return dataUrl;
+  };
+
+  const addImageToPDFPage = (pdf: InstanceType<typeof jsPDF>, dataUrl: string, isFirstPage: boolean) => {
+    if (!isFirstPage) pdf.addPage();
+
+    // Fill page with bg-slate-50 (#f8fafc)
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    pdf.setFillColor(248, 250, 252);
+    pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
+
+    const imgProps = pdf.getImageProperties(dataUrl);
+
+    const marginMM = 15;
+    const availableWidth = pdfWidth - 2 * marginMM;
+    const availableHeight = pdfHeight - 2 * marginMM;
+
+    const ratio = Math.min(availableWidth / imgProps.width, availableHeight / imgProps.height) * 0.65;
+    const imgWidth = imgProps.width * ratio;
+    const imgHeight = imgProps.height * ratio;
+
+    const xPos = (pdfWidth - imgWidth) / 2;
+    const yPos = (pdfHeight - imgHeight) / 2;
+
+    pdf.addImage(dataUrl, "JPEG", xPos, yPos, imgWidth, imgHeight, undefined, "MEDIUM");
+  };
+
   const exportAsPDF = async (pdfFormat?: string) => {
     // If no format provided, ask user to choose
     if (!pdfFormat || typeof pdfFormat !== "string") {
       const formatChoice = await new Promise<string>((resolve) => {
         const options = [
-          { value: "a4-landscape", label: "A4 Landscape (Recommended)" },
-          { value: "a4-portrait", label: "A4 Portrait" },
-          { value: "letter-landscape", label: "Letter Landscape" },
+          { value: "a4-portrait", label: "A4 Portrait (Recommended)" },
+          { value: "a4-landscape", label: "A4 Landscape" },
           { value: "letter-portrait", label: "Letter Portrait" },
+          { value: "letter-landscape", label: "Letter Landscape" },
         ];
 
-        // Create a simple dialog
         const dialog = document.createElement("div");
         dialog.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:2rem;border-radius:1rem;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:9999;max-width:400px;";
 
@@ -362,7 +427,7 @@ export function QuoteDashboard() {
               document.body.removeChild(dialog);
               document.body.removeChild(overlay);
             } catch (err) {
-              console.error("Error removing dialog:", err);
+              console.error(err);
             }
             resolve(option.value);
           };
@@ -379,188 +444,84 @@ export function QuoteDashboard() {
             document.body.removeChild(dialog);
             document.body.removeChild(overlay);
           } catch (err) {
-            console.error("Error removing dialog:", err);
+            console.error(err);
           }
-          resolve("a4-landscape"); // Default if user clicks outside
+          resolve("a4-portrait");
         };
 
         document.body.appendChild(overlay);
         document.body.appendChild(dialog);
       });
 
-      // Call recursively with the chosen format
       return exportAsPDF(formatChoice);
     }
 
     if (!exportRef.current) return;
     const node = exportRef.current as HTMLElement;
 
-    // Find all scaled elements including cards container
+    // Find card wrapper elements and comparison table
     const cardsContainer = node.querySelector(".flex.gap-2") as HTMLElement | null;
-    const cardElements = cardsContainer ? (Array.from(cardsContainer.children) as HTMLElement[]) : [];
-    const parentContainer = node.querySelector(".flex.flex-col.gap-8") as HTMLElement | null;
-
-    // Save original styles
-    const originalStyles = {
-      nodeTransform: node.style.transform,
-      nodeWidth: node.style.width,
-      nodeHeight: node.style.height,
-      nodeMinWidth: node.style.minWidth,
-      nodeVisibility: node.style.visibility,
-      containerGap: cardsContainer?.style.gap || "",
-      containerMargin: cardsContainer?.style.marginBottom || "",
-      parentGap: parentContainer?.style.gap || "",
-      cardStyles: cardElements.map((el) => ({
-        transform: el.style.transform,
-        marginBottom: el.style.marginBottom,
-      })),
-    };
+    const cardWrappers = cardsContainer ? (Array.from(cardsContainer.children) as HTMLElement[]) : [];
+    const comparisonTable = node.querySelector(".bg-white.w-full.rounded-3xl") as HTMLElement | null;
 
     try {
-      toast.loading("Generating Premium PDF...");
+      toast.loading("Generating PDF...");
 
-      // Hide from view to prevent zoom flash
-      node.style.visibility = "hidden";
-
-      // Disable transitions for clean export
-      node.style.transition = "none";
-      node.style.pointerEvents = "none";
-
-      // Remove all scale transforms and negative margins for export
-      node.style.transform = "none";
-      node.style.minWidth = "auto";
-
-      // Increase gap significantly between cards for PDF to prevent congestion
-      if (cardsContainer) {
-        cardsContainer.style.gap = "6rem"; // Much larger gap for PDF spacing
-        cardsContainer.style.marginBottom = "8rem"; // Add space below cards to prevent table overlap
-      }
-
-      // Increase gap between cards section and comparison table
-      if (parentContainer) {
-        parentContainer.style.gap = "12rem"; // Much larger gap to prevent overlap
-      }
-
-      // Reset card transforms and margins - critical for PDF spacing
-      cardElements.forEach((el) => {
-        el.style.transition = "none";
-        el.style.transform = "none"; // Completely remove transform
-        el.style.marginBottom = "0"; // Remove negative margins
-      });
-
-      // Force reflow to get accurate measurements
-      node.getBoundingClientRect();
-
-      // Measure actual content size after removing transforms
-      await new Promise((resolve) => setTimeout(resolve, 150));
-      const measuredWidth = Math.ceil(node.scrollWidth);
-      const measuredHeight = Math.ceil(node.scrollHeight);
-
-      // Add more padding for PDF to ensure proper spacing
-      const exportWidth = measuredWidth + 200;
-      const exportHeight = measuredHeight + 200;
-
-      node.style.width = `${exportWidth}px`;
-      node.style.height = `${exportHeight}px`;
-
-      // Make visible for capture
-      node.style.visibility = "visible";
-
-      const dataUrl = await toPng(node, {
-        backgroundColor: "#ffffff",
-        pixelRatio: 3,
-        quality: 1,
-        width: exportWidth,
-        height: exportHeight,
-      });
-
-      // Restore original styles before PDF generation
-      node.style.transform = originalStyles.nodeTransform;
-      node.style.width = originalStyles.nodeWidth;
-      node.style.height = originalStyles.nodeHeight;
-      node.style.minWidth = originalStyles.nodeMinWidth;
-      node.style.visibility = originalStyles.nodeVisibility;
-      node.style.transition = "";
-      node.style.pointerEvents = "";
-
-      if (cardsContainer) {
-        cardsContainer.style.gap = originalStyles.containerGap;
-        cardsContainer.style.marginBottom = originalStyles.containerMargin;
-      }
-
-      if (parentContainer) {
-        parentContainer.style.gap = originalStyles.parentGap;
-      }
-
-      cardElements.forEach((el, idx) => {
-        el.style.transition = "";
-        el.style.transform = originalStyles.cardStyles[idx].transform;
-        el.style.marginBottom = originalStyles.cardStyles[idx].marginBottom;
-      });
-
-      // Parse format choice
+      // Parse format
       const parts = pdfFormat.split("-");
       const format = parts[0] as "a4" | "letter";
       const orientation = parts[1] as "landscape" | "portrait";
 
-      // Create PDF with chosen format
-      const pdf = new jsPDF({
-        orientation: orientation,
-        unit: "mm",
-        format: format,
-      });
+      const pdf = new jsPDF({ orientation, unit: "mm", format });
 
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      // Capture each card individually — 1 card per page
+      for (let i = 0; i < cardWrappers.length; i++) {
+        const wrapper = cardWrappers[i];
+        const origTransform = wrapper.style.transform;
+        const origMargin = wrapper.style.marginBottom;
 
-      // Add margins to PDF content
-      const marginMM = 10;
-      const availableWidth = pdfWidth - 2 * marginMM;
-      const availableHeight = pdfHeight - 2 * marginMM;
+        const dataUrl = await captureElement(wrapper, origTransform, origMargin);
+        addImageToPDFPage(pdf, dataUrl, i === 0);
+      }
 
-      const ratio = Math.min(availableWidth / imgProps.width, availableHeight / imgProps.height);
+      // Capture comparison table on its own landscape page (if enabled)
+      if (showComparison && comparisonTable) {
+        const dataUrl = await toPng(comparisonTable, {
+          backgroundColor: "#f8fafc",
+          pixelRatio: 1.5,
+          quality: 0.92,
+        });
 
-      const imgWidth = imgProps.width * ratio;
-      const imgHeight = imgProps.height * ratio;
+        // Add a landscape page for the wide table
+        pdf.addPage(format, "landscape");
+        const tPdfWidth = pdf.internal.pageSize.getWidth();
+        const tPdfHeight = pdf.internal.pageSize.getHeight();
 
-      // Center the image with margins
-      const xPos = (pdfWidth - imgWidth) / 2;
-      const yPos = (pdfHeight - imgHeight) / 2;
+        // Fill background
+        pdf.setFillColor(248, 250, 252);
+        pdf.rect(0, 0, tPdfWidth, tPdfHeight, "F");
 
-      pdf.addImage(dataUrl, "PNG", xPos, yPos, imgWidth, imgHeight);
+        const tImgProps = pdf.getImageProperties(dataUrl);
+        const tMargin = 15;
+        const tAvailW = tPdfWidth - 2 * tMargin;
+        const tAvailH = tPdfHeight - 2 * tMargin;
+        const tRatio = Math.min(tAvailW / tImgProps.width, tAvailH / tImgProps.height) * 0.9;
+        const tImgW = tImgProps.width * tRatio;
+        const tImgH = tImgProps.height * tRatio;
+        const tX = (tPdfWidth - tImgW) / 2;
+        const tY = (tPdfHeight - tImgH) / 2;
+
+        pdf.addImage(dataUrl, "JPEG", tX, tY, tImgW, tImgH, undefined, "MEDIUM");
+      }
+
       pdf.save(`RestoRefine-Proposal-${format.toUpperCase()}-${orientation}-${new Date().toISOString().split("T")[0]}.pdf`);
 
       toast.dismiss();
-      toast.success("Professional PDF generated");
+      toast.success("PDF generated successfully");
     } catch (err) {
       console.error("PDF export error:", err);
       toast.dismiss();
       toast.error("PDF generation failed");
-
-      // Restore on error too
-      node.style.transform = originalStyles.nodeTransform;
-      node.style.width = originalStyles.nodeWidth;
-      node.style.height = originalStyles.nodeHeight;
-      node.style.minWidth = originalStyles.nodeMinWidth;
-      node.style.visibility = originalStyles.nodeVisibility;
-      node.style.transition = "";
-      node.style.pointerEvents = "";
-
-      if (cardsContainer) {
-        cardsContainer.style.gap = originalStyles.containerGap;
-        cardsContainer.style.marginBottom = originalStyles.containerMargin;
-      }
-
-      if (parentContainer) {
-        parentContainer.style.gap = originalStyles.parentGap;
-      }
-
-      cardElements.forEach((el, idx) => {
-        el.style.transition = "";
-        el.style.transform = originalStyles.cardStyles[idx].transform;
-        el.style.marginBottom = originalStyles.cardStyles[idx].marginBottom;
-      });
     }
   };
 
@@ -602,11 +563,7 @@ export function QuoteDashboard() {
                 <span>Quote History</span>
               </Button>
             </Link>
-            <Button
-              onClick={handleManualSave}
-              disabled={isSaving}
-              className="w-full justify-start gap-3 bg-red-500 hover:bg-red-600 text-white font-bold"
-            >
+            <Button onClick={handleManualSave} disabled={isSaving} className="w-full justify-start gap-3 bg-red-500 hover:bg-red-600 text-white font-bold">
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -696,11 +653,7 @@ export function QuoteDashboard() {
                   <Download size={18} className="mr-2" /> PDF
                 </Button>
               </div>
-              <Button
-                onClick={handleShareLink}
-                variant="outline"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border-none h-12 font-bold"
-              >
+              <Button onClick={handleShareLink} variant="outline" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border-none h-12 font-bold">
                 <Share2 size={18} className="mr-2" /> Share Link
               </Button>
             </div>
@@ -709,11 +662,7 @@ export function QuoteDashboard() {
 
         {/* Footer with Logout */}
         <div className="p-4 border-t border-slate-800">
-          <Button
-            onClick={logout}
-            variant="ghost"
-            className="w-full justify-start gap-3 text-slate-400 hover:text-red-500 hover:bg-slate-800"
-          >
+          <Button onClick={logout} variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-red-500 hover:bg-slate-800">
             <LogOut size={18} />
             <span>Logout</span>
           </Button>
@@ -757,7 +706,7 @@ export function QuoteDashboard() {
 
                 {/* Comparison Table */}
                 {showComparison && (
-                  <div className="bg-white w-full rounded-3xl p-8 shadow-xl border border-slate-100 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                  <div className="bg-white w-full rounded-3xl p-8 shadow-xl border border-slate-200 animate-in fade-in slide-in-from-bottom-8 duration-700">
                     <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
                       <TableIcon className="text-accent" />
                       Detailed Package Comparison
@@ -809,8 +758,8 @@ export function QuoteDashboard() {
                           <tr>
                             <td className="py-4 px-6 text-xl font-medium text-slate-700">Platform Management</td>
                             {activeQuotes.map((q, idx) => (
-                              <td key={q.id || idx} className="py-4 px-6 text-center text-xl text-emerald-500">
-                                Included
+                              <td key={q.id || idx} className={`py-4 px-6 text-center text-xl ${q.showManagement !== false ? "text-emerald-500" : "text-slate-300"}`}>
+                                {q.showManagement !== false ? "Included" : "Not included"}
                               </td>
                             ))}
                           </tr>

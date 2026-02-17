@@ -163,8 +163,8 @@ function ComparisonPageContent() {
                 <tr>
                   <td className="py-4 px-6 font-medium text-slate-700">Platform Management</td>
                   {quotes.map((q, idx) => (
-                    <td key={q.id || idx} className="py-4 px-6 text-center text-emerald-500">
-                      Included
+                    <td key={q.id || idx} className={`py-4 px-6 text-center ${q.showManagement !== false ? 'text-emerald-500' : 'text-slate-300'}`}>
+                      {q.showManagement !== false ? 'Included' : 'Not included'}
                     </td>
                   ))}
                 </tr>

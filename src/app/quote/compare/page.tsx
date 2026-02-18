@@ -114,7 +114,7 @@ function PackageDetailModal({ quote, colorIdx, onClose }: { quote: QuoteData; co
             <div className="bg-slate-50 rounded-2xl p-4">
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Add-Ons</p>
               <div className="space-y-2">
-                {ADD_ONS.map((addon) => {
+                {Array.from(new Set([...ADD_ONS, ...quote.addOns])).map((addon) => {
                   const included = quote.addOns.includes(addon);
                   return (
                     <div key={addon} className={`flex items-center gap-3 py-1.5 ${!included ? "opacity-30" : ""}`}>
@@ -348,18 +348,22 @@ function ComparisonPageContent() {
               </div>
 
               {/* Add-ons */}
-              {ADD_ONS.map((addon) => (
-                <div key={addon} className="py-4">
-                  <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">{addon}</p>
-                  <div className="flex gap-3">
-                    {quotes.map((q, idx) => (
-                      <div key={q.id || idx} className="flex-1 text-center">
-                        {q.addOns.includes(addon) ? <span className="inline-flex w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full items-center justify-center text-xs">✓</span> : <span className="text-slate-300 font-bold">—</span>}
+              <div className="py-4">
+                <p className="sm:text-2xl font-black uppercase tracking-widest text-slate-400 mb-2">Add-Ons</p>
+                <div className="flex gap-3">
+                  {quotes.map((q, idx) => (
+                    <div key={q.id || idx} className="flex-1">
+                      <div className="flex flex-wrap gap-1">
+                        {q.addOns.length > 0 ? q.addOns.map((addon, aIdx) => (
+                          <span key={addon + aIdx} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[15px] font-bold uppercase">
+                            {addon}
+                          </span>
+                        )) : <span className="text-slate-300 font-bold">—</span>}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
 
               {/* Initial Term */}
               <div className="py-4">
@@ -451,16 +455,20 @@ function ComparisonPageContent() {
                     </td>
                   ))}
                 </tr>
-                {ADD_ONS.map((addon) => (
-                  <tr key={addon}>
-                    <td className="py-4 px-6 font-medium text-slate-700">{addon}</td>
-                    {quotes.map((q, idx) => (
-                      <td key={q.id || idx} className="py-4 px-6 text-center">
-                        {q.addOns.includes(addon) ? <span className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">✓</span> : <span className="text-slate-300">—</span>}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                <tr>
+                  <td className="py-4 px-6 font-medium text-slate-700">Add-Ons</td>
+                  {quotes.map((q, idx) => (
+                    <td key={q.id || idx} className="py-4 px-6 text-center">
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {q.addOns.length > 0 ? q.addOns.map((addon, aIdx) => (
+                          <span key={addon + aIdx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-bold uppercase">
+                            {addon}
+                          </span>
+                        )) : <span className="text-slate-300">—</span>}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
                 <tr>
                   <td className="py-4 px-6 font-medium text-slate-700">Initial Term</td>
                   {quotes.map((q, idx) => (

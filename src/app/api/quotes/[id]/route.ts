@@ -82,6 +82,7 @@ export async function PUT(
         exitNoticeLabel: body.exitNoticeLabel,
         showManagement: body.showManagement,
         showCTA: body.showCTA,
+        sortOrder: body.sortOrder,
         ctaTitle: body.ctaTitle,
         ctaText: body.ctaText,
         ctaHighlight: body.ctaHighlight,

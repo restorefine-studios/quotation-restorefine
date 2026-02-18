@@ -80,6 +80,9 @@ model Quote {
   ctaHighlightUnderline   Boolean   @default(true)
   ctaFooter               String
 
+  // Display order
+  sortOrder               Int       @default(0)
+
   // Metadata
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const quotes = await prisma.quote.findMany({
       where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { sortOrder: 'asc' },
     })
 
     return NextResponse.json({ quotes })
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         exitNoticeLabel: body.exitNoticeLabel || 'Exit Notice',
         showManagement: body.showManagement !== undefined ? body.showManagement : true,
         showCTA: body.showCTA !== undefined ? body.showCTA : true,
+        sortOrder: body.sortOrder ?? 0,
         ctaTitle: body.ctaTitle,
         ctaText: body.ctaText,
         ctaHighlight: body.ctaHighlight,

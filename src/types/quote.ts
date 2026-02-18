@@ -24,6 +24,7 @@ export interface QuoteData {
   ctaHighlightColor: string
   ctaHighlightUnderline: boolean
   ctaFooter: string
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }

@@ -3,7 +3,7 @@ import { QuotePreview } from "./QuotePreview";
 import { QuoteEditor } from "./QuoteEditor";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Download, Table as TableIcon, Trash2, Loader2, ZoomIn, ZoomOut, History, LogOut, Share2, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Download, Table as TableIcon, Trash2, Loader2, ZoomIn, ZoomOut, History, LogOut, Share2, ChevronUp, ChevronDown, Menu, X, Eye, Pencil } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Switch } from "./ui/switch";
@@ -22,6 +22,8 @@ export function QuoteDashboard() {
   const [showComparison, setShowComparison] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [zoom, setZoom] = useState(0.65);
+  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -118,7 +120,7 @@ export function QuoteDashboard() {
     try {
       // Save all quotes
       for (let i = 0; i < activeQuotes.length; i++) {
-        const quote = activeQuotes[i];
+        const quote = { ...activeQuotes[i], sortOrder: i };
         if (quote.id) {
           // Update existing quote
           await fetch(`/api/quotes/${quote.id}`, {
@@ -561,8 +563,87 @@ export function QuoteDashboard() {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      {/* Sidebar Navigation */}
-      <aside className="w-64 bg-gray-950 text-slate-400 flex flex-col h-full border-r border-slate-800 shrink-0">
+
+      {/* ── MOBILE SLIDE-IN DRAWER ── */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-gray-950 text-slate-400 flex flex-col overflow-y-auto animate-in slide-in-from-left duration-200">
+            <div className="flex items-center justify-between p-4 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Image src="/r-logo.png" alt="RestoRefine" width={28} height={28} />
+                <span className="text-white font-bold text-sm">RestoRefine</span>
+              </div>
+              <button onClick={() => setMobileMenuOpen(false)} className="text-slate-400 hover:text-white p-1">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 p-4 space-y-6 overflow-y-auto">
+              <div className="space-y-2">
+                <Link href="/history" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-white hover:bg-slate-800">
+                    <History size={18} /><span>Quote History</span>
+                  </Button>
+                </Link>
+              </div>
+              {/* Packages */}
+              <div>
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Packages</span>
+                  <Button variant="ghost" size="icon" onClick={handleAddCard} className="h-6 w-6 text-slate-400 hover:text-white">
+                    <Plus size={16} />
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {activeQuotes.map((q, idx) => (
+                    <div key={q.id || idx} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer ${activeTab === idx.toString() ? "bg-red-500/20 text-white" : "hover:bg-slate-800 text-slate-400"}`} onClick={() => { setActiveTab(idx.toString()); setMobileMenuOpen(false); setMobileView("edit"); }}>
+                      <div className="w-5 h-5 rounded bg-slate-800 flex items-center justify-center text-[10px] shrink-0">{idx}</div>
+                      <span className="truncate flex-1 text-sm">{q.packageName}</span>
+                      <div className="flex items-center gap-0.5">
+                        <button className={`h-5 w-5 flex items-center justify-center rounded ${idx === 0 ? "text-slate-700 pointer-events-none" : "text-slate-400 hover:text-white"}`} onClick={(e) => { e.stopPropagation(); handleMoveCard(idx, "up"); }}><ChevronUp size={12} /></button>
+                        <button className={`h-5 w-5 flex items-center justify-center rounded ${idx === activeQuotes.length - 1 ? "text-slate-700 pointer-events-none" : "text-slate-400 hover:text-white"}`} onClick={(e) => { e.stopPropagation(); handleMoveCard(idx, "down"); }}><ChevronDown size={12} /></button>
+                        {activeQuotes.length > 1 && <button className="h-5 w-5 flex items-center justify-center text-slate-400 hover:text-red-400" onClick={(e) => { e.stopPropagation(); handleRemoveCard(q.id ?? idx); setMobileMenuOpen(false); }}><Trash2 size={12} /></button>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Settings */}
+              <div className="border-t border-slate-800 pt-4 space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium text-slate-200">Comparison Table</p>
+                    <p className="text-xs text-slate-500">Show details below cards</p>
+                  </div>
+                  <Switch checked={showComparison} onCheckedChange={setShowComparison} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Export</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button onClick={exportAsImage} variant="outline" className="bg-slate-800 border-none text-slate-300 hover:bg-slate-700 hover:text-white h-10">
+                      <Download size={16} className="mr-2" /> PNG
+                    </Button>
+                    <Button onClick={() => exportAsPDF()} variant="outline" className="bg-slate-800 border-none text-slate-300 hover:bg-slate-700 hover:text-white h-10">
+                      <Download size={16} className="mr-2" /> PDF
+                    </Button>
+                  </div>
+                  <Button onClick={handleShareLink} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border-none h-10 font-bold">
+                    <Share2 size={16} className="mr-2" /> Share Link
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-800">
+              <Button onClick={logout} variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-red-500 hover:bg-slate-800">
+                <LogOut size={18} /><span>Logout</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DESKTOP SIDEBAR ── */}
+      <aside className="hidden md:flex w-64 bg-gray-950 text-slate-400 flex-col h-full border-r border-slate-800 shrink-0">
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center">
             <Image src="/r-logo.png" alt="RestoRefine Logo" width={32} height={32} className="object-contain" />
@@ -724,19 +805,73 @@ export function QuoteDashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-100">
+
+        {/* ── MOBILE TOP BAR ── */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-4 bg-gray-950 border-b border-slate-800 shrink-0">
+          <Image src="/r-logo.png" alt="RestoRefine" width={32} height={32} className="shrink-0" />
+          {/* Horizontal package pills */}
+          <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar">
+            {activeQuotes.map((q, idx) => (
+              <button
+                key={q.id || idx}
+                onClick={() => setActiveTab(idx.toString())}
+                className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === idx.toString() ? "bg-red-500 text-white" : "bg-slate-800 text-slate-400"}`}
+              >
+                {q.packageName}
+              </button>
+            ))}
+            {activeQuotes.length < 4 && (
+              <button onClick={handleAddCard} className="shrink-0 w-8 h-8 flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white rounded-lg">
+                <Plus size={15} />
+              </button>
+            )}
+          </div>
+          <Button onClick={handleManualSave} disabled={isSaving} className="shrink-0 h-9 px-4 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg">
+            {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
+          </Button>
+          <button onClick={() => setMobileMenuOpen(true)} className="shrink-0 text-slate-400 hover:text-white p-1.5">
+            <Menu size={22} />
+          </button>
+        </div>
+
         <div className="flex flex-1 overflow-hidden">
-          {/* Editor Sidebar (Conditional on selection) */}
-          <div className="w-[400px] h-full overflow-y-auto border-r border-slate-200 bg-white shadow-sm p-6 shrink-0 custom-scrollbar">
+          {/* ── DESKTOP EDITOR ── */}
+          <div className="hidden md:block w-[400px] h-full overflow-y-auto border-r border-slate-200 bg-white shadow-sm p-6 shrink-0 custom-scrollbar">
             <div className="mb-6">
               <h2 className="text-xl font-bold text-slate-900">Package Editor</h2>
               <p className="text-sm text-slate-500">Editing: {activeQuotes[parseInt(activeTab)]?.packageName}</p>
             </div>
-
             <QuoteEditor quote={activeQuotes[parseInt(activeTab)]} onSave={() => toast.success("Changes saved locally")} onChange={(updated) => handleQuoteChange(parseInt(activeTab), updated)} />
           </div>
 
-          {/* Preview Canvas */}
-          <div ref={canvasRef} className="flex max-h-screen overflow-auto bg-slate-100 p-8 max-w-full custom-scrollbar relative">
+          {/* ── MOBILE EDIT VIEW ── */}
+          <div className={`md:hidden flex-1 overflow-y-auto bg-white custom-scrollbar ${mobileView === "edit" ? "block" : "hidden"}`}>
+            <div className="p-4 pb-2 border-b border-slate-100">
+              <h2 className="text-base font-bold text-slate-900">Package Editor</h2>
+              <p className="text-xs text-slate-500">Editing: {activeQuotes[parseInt(activeTab)]?.packageName}</p>
+            </div>
+            <div className="p-4">
+              <QuoteEditor quote={activeQuotes[parseInt(activeTab)]} onSave={() => toast.success("Changes saved locally")} onChange={(updated) => handleQuoteChange(parseInt(activeTab), updated)} />
+            </div>
+          </div>
+
+          {/* ── MOBILE PREVIEW VIEW ── */}
+          <div className={`md:hidden flex-1 overflow-y-auto bg-slate-100 custom-scrollbar ${mobileView === "preview" ? "flex" : "hidden"} flex-col items-center gap-6 p-4`}>
+            {activeQuotes.map((q, idx) => (
+              <div key={q.id || idx}>
+                <p className="text-xs font-bold text-slate-500 text-center mb-2 uppercase tracking-wider">{q.packageName}</p>
+                <div className="relative overflow-hidden rounded-2xl shadow-xl" style={{ width: 300, height: 616 }}>
+                  <div className="absolute top-0 left-0 origin-top-left" style={{ transform: "scale(0.333)", width: 900, height: 1850 }}>
+                    <QuotePreview quote={q} />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="h-4" />
+          </div>
+
+          {/* ── DESKTOP PREVIEW CANVAS ── */}
+          <div ref={canvasRef} className="hidden md:flex max-h-screen overflow-auto bg-slate-100 p-8 max-w-full custom-scrollbar relative">
             <div ref={exportRef} className="p-12 bg-slate-50 mx-auto rounded-2xl transition-transform duration-200" style={{ width: "fit-content", minWidth: 3000, overflow: "visible", transform: `scale(${zoom})` }}>
               <div className="flex flex-col gap-8 items-center">
                 {/* Package Cards View */}
@@ -842,6 +977,31 @@ export function QuoteDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── MOBILE BOTTOM NAV ── */}
+        <div className="md:hidden flex border-t border-slate-200 bg-white shrink-0 safe-area-bottom">
+          <button
+            onClick={() => setMobileView("edit")}
+            className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-bold transition-colors ${mobileView === "edit" ? "text-red-500" : "text-slate-400"}`}
+          >
+            <Pencil size={18} />
+            Edit
+          </button>
+          <button
+            onClick={() => setMobileView("preview")}
+            className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-bold transition-colors ${mobileView === "preview" ? "text-red-500" : "text-slate-400"}`}
+          >
+            <Eye size={18} />
+            Preview
+          </button>
+          <button
+            onClick={handleShareLink}
+            className="flex-1 py-3 flex flex-col items-center gap-1 text-xs font-bold text-emerald-600"
+          >
+            <Share2 size={18} />
+            Share
+          </button>
         </div>
       </main>
     </div>

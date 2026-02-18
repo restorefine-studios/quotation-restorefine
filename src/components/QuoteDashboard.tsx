@@ -163,29 +163,37 @@ export function QuoteDashboard() {
       return;
     }
 
-    try {
-      const quoteIds = activeQuotes.map((q) => q.id);
-      const clientName = activeQuotes[0]?.clientName || "client";
+    const quoteIds = activeQuotes.map((q) => q.id);
+    const clientName = activeQuotes[0]?.clientName || "client";
+    const origin = window.location.origin;
+    const count = activeQuotes.length;
 
-      const res = await fetch("/api/compare-links", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quoteIds, clientName }),
-      });
-
+    // Resolve the slug asynchronously
+    const urlPromise = fetch("/api/compare-links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quoteIds, clientName }),
+    }).then(async (res) => {
       if (!res.ok) throw new Error("Failed to create share link");
-
       const { slug } = await res.json();
-      const shareUrl = `${window.location.origin}/quote/compare/${slug}`;
+      return `${origin}/quote/compare/${slug}`;
+    });
 
-      navigator.clipboard.writeText(shareUrl).then(
-        () => {
-          toast.success(`Share link copied! Includes ${activeQuotes.length} package${activeQuotes.length > 1 ? "s" : ""}`);
-        },
-        () => {
-          toast.error("Failed to copy link");
-        },
-      );
+    try {
+      // Safari requires ClipboardItem with a Promise — the write must be
+      // initiated synchronously within the user gesture even if content resolves later.
+      if (typeof ClipboardItem !== "undefined") {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/plain": urlPromise.then((url) => new Blob([url], { type: "text/plain" })),
+          }),
+        ]);
+      } else {
+        // Firefox / other browsers
+        const url = await urlPromise;
+        await navigator.clipboard.writeText(url);
+      }
+      toast.success(`Share link copied! Includes ${count} package${count > 1 ? "s" : ""}`);
     } catch {
       toast.error("Failed to generate share link");
     }

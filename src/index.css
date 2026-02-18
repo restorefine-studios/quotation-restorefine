@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Manrope:wght@200..800&display=swap');
+/* Fonts loaded via next/font in layout.tsx for optimal non-blocking loading */
 
 @tailwind base;
 @tailwind components;

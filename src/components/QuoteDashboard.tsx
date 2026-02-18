@@ -1,6 +1,5 @@
 import { QuoteData, PLATFORMS, ADD_ONS, DEFAULT_QUOTE } from "../types/quote";
-import { QuotePreview } from "./QuotePreview";
-import { QuoteEditor } from "./QuoteEditor";
+import dynamic from "next/dynamic";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Download, Table as TableIcon, Trash2, Loader2, ZoomIn, ZoomOut, History, LogOut, Share2, ChevronUp, ChevronDown, Menu, X, Eye, Pencil } from "lucide-react";
@@ -8,12 +7,13 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
-import { toPng } from "html-to-image";
-import { jsPDF } from "jspdf";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
+
+const QuotePreview = dynamic(() => import("./QuotePreview").then(m => ({ default: m.QuotePreview })), { ssr: false });
+const QuoteEditor = dynamic(() => import("./QuoteEditor").then(m => ({ default: m.QuoteEditor })), { ssr: false });
 
 export function QuoteDashboard() {
   const { logout } = useAuth();
@@ -301,6 +301,7 @@ export function QuoteDashboard() {
       // Make visible for capture
       node.style.visibility = "visible";
 
+      const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(node, {
         backgroundColor: "#f8fafc",
         pixelRatio: 2,
@@ -384,6 +385,7 @@ export function QuoteDashboard() {
 
     await new Promise((resolve) => setTimeout(resolve, 150));
 
+    const { toPng } = await import("html-to-image");
     const dataUrl = await toPng(target, {
       backgroundColor: "#f8fafc",
       pixelRatio: 1.5,
@@ -400,7 +402,8 @@ export function QuoteDashboard() {
     return dataUrl;
   };
 
-  const addImageToPDFPage = (pdf: InstanceType<typeof jsPDF>, dataUrl: string, isFirstPage: boolean) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const addImageToPDFPage = (pdf: any, dataUrl: string, isFirstPage: boolean) => {
     if (!isFirstPage) pdf.addPage();
 
     // Fill page with bg-slate-50 (#f8fafc)
@@ -510,6 +513,7 @@ export function QuoteDashboard() {
       const format = parts[0] as "a4" | "letter";
       const orientation = parts[1] as "landscape" | "portrait";
 
+      const { jsPDF } = await import("jspdf");
       const pdf = new jsPDF({ orientation, unit: "mm", format });
 
       // Capture each card individually — 1 card per page
@@ -524,7 +528,8 @@ export function QuoteDashboard() {
 
       // Capture comparison table on its own landscape page (if enabled)
       if (showComparison && comparisonTable) {
-        const dataUrl = await toPng(comparisonTable, {
+        const { toPng: toPngTable } = await import("html-to-image");
+        const dataUrl = await toPngTable(comparisonTable, {
           backgroundColor: "#f8fafc",
           pixelRatio: 1.5,
           quality: 0.92,

@@ -368,17 +368,20 @@ export function QuoteEditor({ quote, onChange, onSave }: QuoteEditorProps) {
 
       {/* CTA Editing */}
       <div className="bg-slate-900 rounded-[2rem] p-6 text-white space-y-6 shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white">
-            <Zap size={20} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white">
+              <Zap size={20} />
+            </div>
+            <div>
+              <h3 className="text-sm font-black uppercase tracking-widest leading-tight">CTA Configuration</h3>
+              <p className="text-[10px] text-slate-400 font-bold tracking-wider">Final conversion block</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-black uppercase tracking-widest leading-tight">CTA Configuration</h3>
-            <p className="text-[10px] text-slate-400 font-bold tracking-wider">Final conversion block</p>
-          </div>
+          <Switch checked={quote.showCTA !== false} onCheckedChange={(checked) => handleChange("showCTA", checked)} className="data-[state=checked]:bg-red-600" />
         </div>
 
-        <div className="space-y-5">
+        <div className={`space-y-5 transition-opacity ${quote.showCTA === false ? "opacity-30 pointer-events-none" : ""}`}>
           <div className="space-y-1.5">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Section Title (Small Pulse)</Label>
             <Input value={quote.ctaTitle} onChange={(e) => handleChange("ctaTitle", e.target.value)} placeholder="READY TO START?" className="bg-white/5 border-white/10 text-white focus:border-red-600 focus:ring-red-600/20" />

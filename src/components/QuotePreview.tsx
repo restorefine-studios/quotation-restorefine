@@ -12,11 +12,8 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
     <div
       ref={ref}
       className="w-[900px] rounded-b-[4rem] mx-auto text-slate-900 shadow-2xl font-sans flex flex-col relative"
-      style={{ height: "1650px" }} // Fixed constant height
+      style={{ height: "1850px" }} // Fixed constant height
     >
-      {/* Texture Overlay for Premium Feel */}
-      <div className="absolute bg-none  inset-0 opacity-5 pointer-events-auto bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-
       {/* 1. Header Section */}
       <div className="bg-black  rounded-t-[50px]  p-12 pb-24 relative overflow-hidden shrink-0">
         <div className="relative z-10">
@@ -168,7 +165,7 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
             <Zap size={250} className="text-white" />
           </div>
           {/* flex flex-col gap-3 bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 min-w-[240px] */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 relative z-10">
+          <div className="flex flex-row items-center justify-between gap-10 relative z-10">
             <div>
               <p className="text-slate-400 text-sm font-black uppercase tracking-[0.3em] mb-3"> Monthly Investment</p>
               <div className="flex items-baseline gap-3">
@@ -199,39 +196,41 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
         </div>
 
         {/* 7. CTA Section */}
-        <div className="pt-8 flex flex-col items-center gap-8">
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-slate-400 text-[15px] font-black uppercase tracking-[0.2em] ">{quote.ctaTitle || "RESERVE YOUR PACKAGE"}</p>
-            <div className="flex items-center gap-6 group cursor-pointer">
-              <span className="text-4xl font-black text-[#0F172A] tracking-tighter uppercase leading-none">
-                {quote.ctaText?.split(new RegExp(`(${quote.ctaHighlight || "GO"})`, "g")).map((part, i) => (
-                  <span key={i}>
-                    {part === (quote.ctaHighlight || "GO") ? (
-                      <span
-                        className="relative px-1"
-                        style={{
-                          color: quote.ctaHighlightColor || "#EF4444",
-                        }}
-                      >
-                        {part}
-                        {quote.ctaHighlightUnderline && <div className="absolute -bottom-1.5 left-0 w-full h-2.5 opacity-20 -rotate-1 skew-x-12 rounded-full" style={{ backgroundColor: quote.ctaHighlightColor || "#EF4444" }} />}
-                      </span>
-                    ) : (
-                      part
-                    )}
-                  </span>
-                ))}
-              </span>
-              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-600/30 group-hover:translate-x-3 transition-all duration-300">
-                <ArrowRight size={32} />
+        {quote.showCTA !== false && (
+          <div className="pt-8 flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-slate-400 text-[15px] font-black uppercase tracking-[0.2em] ">{quote.ctaTitle || "RESERVE YOUR PACKAGE"}</p>
+              <div className="flex items-center gap-6 group cursor-pointer">
+                <span className="text-4xl font-black text-[#0F172A] tracking-tighter uppercase leading-none">
+                  {quote.ctaText?.split(new RegExp(`(${quote.ctaHighlight || "GO"})`, "g")).map((part, i) => (
+                    <span key={i}>
+                      {part === (quote.ctaHighlight || "GO") ? (
+                        <span
+                          className="relative px-1"
+                          style={{
+                            color: quote.ctaHighlightColor || "#EF4444",
+                          }}
+                        >
+                          {part}
+                          {quote.ctaHighlightUnderline && <div className="absolute -bottom-1.5 left-0 w-full h-2.5 opacity-20 -rotate-1 skew-x-12 rounded-full" style={{ backgroundColor: quote.ctaHighlightColor || "#EF4444" }} />}
+                        </span>
+                      ) : (
+                        part
+                      )}
+                    </span>
+                  ))}
+                </span>
+                <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-600/30 group-hover:translate-x-3 transition-all duration-300">
+                  <ArrowRight size={32} />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-            <ShieldCheck size={16} className="text-red-600" /> {quote.ctaFooter || "Premium Content Quality Guaranteed"}
+            <div className="flex items-center gap-3 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+              <ShieldCheck size={16} className="text-red-600" /> {quote.ctaFooter || "Premium Content Quality Guaranteed"}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

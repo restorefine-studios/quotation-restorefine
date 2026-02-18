@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Quote" ADD COLUMN     "showCTA" BOOLEAN NOT NULL DEFAULT true;

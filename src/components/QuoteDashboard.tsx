@@ -3,7 +3,7 @@ import { QuotePreview } from "./QuotePreview";
 import { QuoteEditor } from "./QuoteEditor";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Download, Table as TableIcon, Trash2, Loader2, ZoomIn, ZoomOut, History, LogOut, Share2 } from "lucide-react";
+import { Plus, Download, Table as TableIcon, Trash2, Loader2, ZoomIn, ZoomOut, History, LogOut, Share2, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Switch } from "./ui/switch";
@@ -87,9 +87,28 @@ export function QuoteDashboard() {
     toast.success("Package removed");
   };
 
+  const handleMoveCard = (idx: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= activeQuotes.length) return;
+    const newQuotes = [...activeQuotes];
+    [newQuotes[idx], newQuotes[targetIdx]] = [newQuotes[targetIdx], newQuotes[idx]];
+    setActiveQuotes(newQuotes);
+    setActiveTab(targetIdx.toString());
+  };
+
   const handleQuoteChange = (index: number, updatedQuote: QuoteData) => {
     const newQuotes = [...activeQuotes];
     newQuotes[index] = updatedQuote;
+
+    // Sync showCTA across all cards (global setting)
+    if (updatedQuote.showCTA !== activeQuotes[index].showCTA) {
+      for (let i = 0; i < newQuotes.length; i++) {
+        if (i !== index) {
+          newQuotes[i] = { ...newQuotes[i], showCTA: updatedQuote.showCTA };
+        }
+      }
+    }
+
     setActiveQuotes(newQuotes);
     // Manual save only - no auto-save
   };
@@ -329,35 +348,30 @@ export function QuoteDashboard() {
   };
 
   const captureElement = async (el: HTMLElement, originalTransform: string, originalMarginBottom: string) => {
-    // Save and reset styles for clean capture
+    // Capture the actual QuotePreview child, not the wrapper with extra space
+    const target = (el.firstElementChild as HTMLElement) || el;
     const parent = el.parentElement;
     const origParentOverflow = parent?.style.overflow || "";
-    const origElOverflow = el.style.overflow;
-    const origElHeight = el.style.height;
 
     el.style.transition = "none";
     el.style.transform = "none";
     el.style.marginBottom = "0";
     el.style.overflow = "visible";
-    el.style.height = "auto";
     if (parent) parent.style.overflow = "visible";
 
     await new Promise((resolve) => setTimeout(resolve, 150));
 
-    const dataUrl = await toPng(el, {
+    const dataUrl = await toPng(target, {
       backgroundColor: "#f8fafc",
       pixelRatio: 1.5,
       quality: 0.92,
-      height: el.scrollHeight,
-      width: el.scrollWidth,
     });
 
     // Restore original styles
     el.style.transition = "";
     el.style.transform = originalTransform;
     el.style.marginBottom = originalMarginBottom;
-    el.style.overflow = origElOverflow;
-    el.style.height = origElHeight;
+    el.style.overflow = "";
     if (parent) parent.style.overflow = origParentOverflow;
 
     return dataUrl;
@@ -373,19 +387,20 @@ export function QuoteDashboard() {
     pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
 
     const imgProps = pdf.getImageProperties(dataUrl);
+    const margin = 5; // 5mm margin on each side
 
-    const marginMM = 15;
-    const availableWidth = pdfWidth - 2 * marginMM;
-    const availableHeight = pdfHeight - 2 * marginMM;
+    const availWidth = pdfWidth - 2 * margin;
+    const availHeight = pdfHeight - 2 * margin;
 
-    const ratio = Math.min(availableWidth / imgProps.width, availableHeight / imgProps.height) * 0.65;
-    const imgWidth = imgProps.width * ratio;
-    const imgHeight = imgProps.height * ratio;
+    // Scale to fill the page as much as possible (fit within both dimensions)
+    const scale = Math.min(availWidth / imgProps.width, availHeight / imgProps.height);
+    const finalWidth = imgProps.width * scale;
+    const finalHeight = imgProps.height * scale;
 
-    const xPos = (pdfWidth - imgWidth) / 2;
-    const yPos = (pdfHeight - imgHeight) / 2;
+    const xPos = (pdfWidth - finalWidth) / 2;
+    const yPos = (pdfHeight - finalHeight) / 2;
 
-    pdf.addImage(dataUrl, "JPEG", xPos, yPos, imgWidth, imgHeight, undefined, "MEDIUM");
+    pdf.addImage(dataUrl, "JPEG", xPos, yPos, finalWidth, finalHeight, undefined, "MEDIUM");
   };
 
   const exportAsPDF = async (pdfFormat?: string) => {
@@ -594,24 +609,62 @@ export function QuoteDashboard() {
                   <div className="w-5 h-5 rounded bg-slate-800 flex items-center justify-center text-[10px] shrink-0">{idx + 0}</div>
                   <span className="truncate flex-1 text-left">{q.packageName}</span>
                   {activeQuotes.length > 1 && (
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className="h-6 w-6 flex items-center justify-center text-white hover:bg-white hover:rounded-sm hover:text-red-400  cursor-pointer ml-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveCard(q.id ?? idx);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
+                    <div className="flex items-center gap-0.5 ml-auto">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className={`h-6 w-6 flex items-center justify-center cursor-pointer rounded-sm ${idx === 0 ? "text-slate-700 pointer-events-none" : "text-white hover:bg-white hover:text-black"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveCard(idx, "up");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                            handleMoveCard(idx, "up");
+                          }
+                        }}
+                        aria-label="Move up"
+                      >
+                        <ChevronUp size={14} />
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className={`h-6 w-6 flex items-center justify-center cursor-pointer rounded-sm ${idx === activeQuotes.length - 1 ? "text-slate-700 pointer-events-none" : "text-white hover:bg-white hover:text-black"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveCard(idx, "down");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                            handleMoveCard(idx, "down");
+                          }
+                        }}
+                        aria-label="Move down"
+                      >
+                        <ChevronDown size={14} />
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className="h-6 w-6 flex items-center justify-center text-white hover:bg-white hover:rounded-sm hover:text-red-400 cursor-pointer"
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveCard(q.id ?? idx);
-                        }
-                      }}
-                      aria-label="Delete card"
-                    >
-                      <Trash2 size={16} />
-                    </span>
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                            handleRemoveCard(q.id ?? idx);
+                          }
+                        }}
+                        aria-label="Delete card"
+                      >
+                        <Trash2 size={14} />
+                      </span>
+                    </div>
                   )}
                 </TabsTrigger>
               ))}
@@ -696,7 +749,7 @@ export function QuoteDashboard() {
                         animationDelay: `${idx * 80}ms`,
                         transform: "scale(0.62)",
                         transformOrigin: "top center",
-                        marginBottom: "-320px",
+                        marginBottom: "-420px",
                       }}
                     >
                       <QuotePreview quote={q} />

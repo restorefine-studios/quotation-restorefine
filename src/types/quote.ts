@@ -17,6 +17,7 @@ export interface QuoteData {
   exitNotice: string
   exitNoticeLabel: string
   showManagement: boolean
+  showCTA: boolean
   ctaTitle: string
   ctaText: string
   ctaHighlight: string
@@ -53,6 +54,7 @@ export const DEFAULT_QUOTE: QuoteData = {
   exitNotice: '30 Days',
   exitNoticeLabel: 'Exit Notice',
   showManagement: true,
+  showCTA: true,
   ctaTitle: 'Ready to Start?',
   ctaText: 'Reply GO to activate',
   ctaHighlight: 'GO',

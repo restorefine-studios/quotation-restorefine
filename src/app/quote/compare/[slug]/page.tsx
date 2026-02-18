@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { QuoteData } from "@/types/quote";
 import { QuotePreview } from "@/components/QuotePreview";
-import { Loader2, Table as TableIcon } from "lucide-react";
+import { Loader2, Table as TableIcon, X, Video, Camera, Layers, Check, Clock, LogOut, Zap } from "lucide-react";
 import Image from "next/image";
 import { ADD_ONS } from "@/types/quote";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +12,137 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/effect-cards";
 import { EffectCards } from "swiper/modules";
+
+function PackageDetailModal({ quote, onClose }: { quote: QuoteData; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+      {/* Sheet */}
+      <div className="relative w-full max-w-lg bg-white rounded-t-3xl shadow-2xl max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-300" onClick={(e) => e.stopPropagation()}>
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-zinc-300" />
+        </div>
+
+        {/* Dark header */}
+        <div className="mx-4 mt-2 mb-4 rounded-2xl bg-zinc-950 p-5 shrink-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 mb-1">RestoRefine</p>
+              <h2 className="text-lg font-black text-white leading-tight">{quote.packageName}</h2>
+              {quote.subtitle && <p className="text-xs text-zinc-400 font-medium mt-0.5">{quote.subtitle}</p>}
+            </div>
+            <button onClick={onClose} className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="mt-4 pt-4 border-t border-zinc-800 flex items-baseline gap-1.5">
+            <span className="text-4xl font-black text-red-500">£{quote.price}</span>
+            <span className="text-sm text-zinc-500 font-medium">/ month</span>
+          </div>
+          {quote.priceSubtext && <p className="text-xs text-zinc-500 mt-0.5">{quote.priceSubtext}</p>}
+        </div>
+
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-4 pb-8 space-y-3">
+          {/* Deliverables */}
+          <div className="bg-zinc-50 rounded-2xl p-4 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">What&apos;s Included</p>
+            {quote.showVideos && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-zinc-700">
+                  <Video className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-semibold">Short-Form Videos</span>
+                </div>
+                <span className="text-xl font-black text-red-500">{quote.videoCount}</span>
+              </div>
+            )}
+            {quote.showPhotos && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-zinc-700">
+                  <Camera className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-semibold">Professional Photos</span>
+                </div>
+                <span className="text-xl font-black text-red-500">{quote.photoCount}</span>
+              </div>
+            )}
+            {quote.showManagement !== false && (
+              <div className="flex items-center gap-2 text-zinc-700">
+                <Layers className="w-4 h-4 text-red-500" />
+                <span className="text-sm font-semibold">Platform Management</span>
+                <span className="ml-auto text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">Included</span>
+              </div>
+            )}
+          </div>
+
+          {/* Platforms */}
+          {quote.platforms.length > 0 && (
+            <div className="bg-zinc-50 rounded-2xl p-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Platforms</p>
+              <div className="flex flex-wrap gap-2">
+                {quote.platforms.map((p, i) => (
+                  <span key={p + i} className="px-3 py-1.5 bg-zinc-950 text-white rounded-full text-xs font-black uppercase tracking-wide">
+                    {p}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add-ons */}
+          {quote.addOns.length > 0 && (
+            <div className="bg-zinc-50 rounded-2xl p-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Add-Ons</p>
+              <div className="space-y-2">
+                {ADD_ONS.map((addon) => {
+                  const included = quote.addOns.includes(addon);
+                  return (
+                    <div key={addon} className={`flex items-center gap-3 py-1.5 ${!included ? "opacity-25" : ""}`}>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${included ? "bg-red-500" : "bg-zinc-200"}`}>{included ? <Check className="w-3 h-3 text-white" /> : <span className="text-zinc-400 text-xs font-bold">–</span>}</div>
+                      <span className="text-sm font-medium text-zinc-800">{addon}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Terms */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-zinc-50 rounded-2xl p-4">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Clock className="w-3.5 h-3.5 text-red-500" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{quote.initialTermLabel || "Initial Term"}</p>
+              </div>
+              <p className="text-base font-black text-zinc-900">{quote.initialTerm || "3 Months"}</p>
+            </div>
+            <div className="bg-zinc-50 rounded-2xl p-4">
+              <div className="flex items-center gap-1.5 mb-1">
+                <LogOut className="w-3.5 h-3.5 text-red-500" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{quote.exitNoticeLabel || "Exit Notice"}</p>
+              </div>
+              <p className="text-base font-black text-zinc-900">{quote.exitNotice || "30 Days"}</p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          {quote.showCTA && quote.ctaText && (
+            <div className="rounded-2xl bg-zinc-950 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-red-500" />
+                <p className="text-sm font-black text-red-500">{quote.ctaTitle}</p>
+              </div>
+              <p className="text-sm text-zinc-300">{quote.ctaText}</p>
+              {quote.ctaFooter && <p className="text-xs text-zinc-500 mt-2">{quote.ctaFooter}</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function QuoteCard({ quote }: { quote: QuoteData }) {
   return (
@@ -27,6 +158,7 @@ function ComparisonPageContent() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedQuote, setSelectedQuote] = useState<{ quote: QuoteData; idx: number } | null>(null);
 
   const {
     data: quotes = [],
@@ -115,7 +247,15 @@ function ComparisonPageContent() {
           ))}
         </Swiper>
 
-        <p className="mt-6 text-lg font-bold text-slate-700">
+        {selectedQuote && <PackageDetailModal quote={selectedQuote.quote} onClose={() => setSelectedQuote(null)} />}
+
+        {/* Expand button — mobile only */}
+        <button className="md:hidden mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-500 text-white rounded-full text-sm font-bold shadow-md transition-colors" onClick={() => setSelectedQuote({ quote: quotes[activeIndex], idx: activeIndex })}>
+          <Layers className="w-4 h-4" />
+          Expand
+        </button>
+
+        <p className="mt-4 text-lg font-bold text-slate-700">
           {quotes[activeIndex]?.packageName}
           <span className="text-slate-400 font-medium ml-2">
             ({activeIndex + 1} of {quotes.length})

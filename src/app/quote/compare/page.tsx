@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { QuoteData } from "@/types/quote";
 import { QuotePreview } from "@/components/QuotePreview";
-import { Loader2, Table as TableIcon } from "lucide-react";
+import { Loader2, Table as TableIcon, X, Video, Camera, Layers, Check, Clock, LogOut, Zap } from "lucide-react";
 import Image from "next/image";
 import { ADD_ONS } from "@/types/quote";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +16,151 @@ import { EffectCards } from "swiper/modules";
 // QuotePreview is 900x1850. We scale it down to fit.
 // Mobile: 300px wide → scale = 300/900 = 0.333, height = 1850*0.333 ≈ 616
 // Desktop: 400px wide → scale = 400/900 = 0.444, height = 1850*0.444 ≈ 821
+
+const CARD_COLORS = ["bg-red-500", "bg-blue-500", "bg-amber-500", "bg-emerald-500"];
+const CARD_ACCENT = ["text-red-500", "text-blue-500", "text-amber-500", "text-emerald-500"];
+const CARD_BG_LIGHT = ["bg-red-50", "bg-blue-50", "bg-amber-50", "bg-emerald-50"];
+const CARD_BORDER = ["border-red-200", "border-blue-200", "border-amber-200", "border-emerald-200"];
+
+function PackageDetailModal({ quote, colorIdx, onClose }: { quote: QuoteData; colorIdx: number; onClose: () => void }) {
+  const accent = CARD_ACCENT[colorIdx % CARD_ACCENT.length];
+  const dot = CARD_COLORS[colorIdx % CARD_COLORS.length];
+  const bgLight = CARD_BG_LIGHT[colorIdx % CARD_BG_LIGHT.length];
+  const border = CARD_BORDER[colorIdx % CARD_BORDER.length];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Sheet */}
+      <div className="relative w-full max-w-lg bg-white rounded-t-3xl shadow-2xl max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-300" onClick={(e) => e.stopPropagation()}>
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-slate-200" />
+        </div>
+
+        {/* Header */}
+        <div className={`mx-4 mt-2 mb-4 rounded-2xl p-5 ${bgLight} border ${border} shrink-0`}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className={`w-3 h-3 rounded-full shrink-0 mt-1.5 ${dot}`} />
+              <div className="min-w-0">
+                <h2 className="text-lg font-black text-slate-900 leading-tight">{quote.packageName}</h2>
+                {quote.subtitle && <p className="text-xs text-slate-500 font-medium mt-0.5">{quote.subtitle}</p>}
+              </div>
+            </div>
+            <button onClick={onClose} className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Price */}
+          <div className="mt-4 flex items-baseline gap-1">
+            <span className={`text-4xl font-black ${accent}`}>£{quote.price}</span>
+            <span className="text-sm text-slate-400 font-medium">/ month</span>
+          </div>
+          {quote.priceSubtext && <p className="text-xs text-slate-400 mt-0.5">{quote.priceSubtext}</p>}
+        </div>
+
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-4 pb-8 space-y-4">
+          {/* Deliverables */}
+          <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">What&apos;s Included</p>
+            {quote.showVideos && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <Video className={`w-4 h-4 ${accent}`} />
+                  <span className="text-sm font-semibold">Short-Form Videos</span>
+                </div>
+                <span className={`text-xl font-black ${accent}`}>{quote.videoCount}</span>
+              </div>
+            )}
+            {quote.showPhotos && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <Camera className={`w-4 h-4 ${accent}`} />
+                  <span className="text-sm font-semibold">Professional Photos</span>
+                </div>
+                <span className={`text-xl font-black ${accent}`}>{quote.photoCount}</span>
+              </div>
+            )}
+            {quote.showManagement !== false && (
+              <div className="flex items-center gap-2 text-slate-700">
+                <Layers className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm font-semibold">Platform Management</span>
+                <span className="ml-auto text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Included</span>
+              </div>
+            )}
+          </div>
+
+          {/* Platforms */}
+          {quote.platforms.length > 0 && (
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Platforms</p>
+              <div className="flex flex-wrap gap-2">
+                {quote.platforms.map((p, i) => (
+                  <span key={p + i} className={`px-3 py-1.5 ${bgLight} ${accent} border ${border} rounded-full text-xs font-black uppercase tracking-wide`}>
+                    {p}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add-ons */}
+          {quote.addOns.length > 0 && (
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Add-Ons</p>
+              <div className="space-y-2">
+                {ADD_ONS.map((addon) => {
+                  const included = quote.addOns.includes(addon);
+                  return (
+                    <div key={addon} className={`flex items-center gap-3 py-1.5 ${!included ? "opacity-30" : ""}`}>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${included ? "bg-emerald-100" : "bg-slate-200"}`}>{included ? <Check className="w-3 h-3 text-emerald-600" /> : <span className="text-slate-400 text-xs font-bold">–</span>}</div>
+                      <span className="text-sm font-medium text-slate-700">{addon}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Terms */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{quote.initialTermLabel || "Initial Term"}</p>
+              </div>
+              <p className="text-base font-black text-slate-900">{quote.initialTerm || "3 Months"}</p>
+            </div>
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <div className="flex items-center gap-1.5 mb-1">
+                <LogOut className="w-3.5 h-3.5 text-slate-400" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{quote.exitNoticeLabel || "Exit Notice"}</p>
+              </div>
+              <p className="text-base font-black text-slate-900">{quote.exitNotice || "30 Days"}</p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          {quote.showCTA && quote.ctaText && (
+            <div className={`rounded-2xl p-4 border ${border} ${bgLight}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className={`w-4 h-4 ${accent}`} />
+                <p className={`text-sm font-black ${accent}`}>{quote.ctaTitle}</p>
+              </div>
+              <p className="text-sm text-slate-600">{quote.ctaText}</p>
+              {quote.ctaFooter && <p className="text-xs text-slate-400 mt-2">{quote.ctaFooter}</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function QuoteCard({ quote }: { quote: QuoteData }) {
   return (
@@ -32,6 +177,7 @@ function ComparisonPageContent() {
   const router = useRouter();
   const idsParam = searchParams.get("ids");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedQuote, setSelectedQuote] = useState<{ quote: QuoteData; idx: number } | null>(null);
 
   const {
     data: quotes = [],
@@ -118,7 +264,7 @@ function ComparisonPageContent() {
         </Swiper>
 
         {/* Package name label */}
-        <p className="mt-6 text-lg font-bold text-slate-700">
+        <p className="mt-4 text-lg font-bold text-slate-700">
           {quotes[activeIndex]?.packageName}
           <span className="text-slate-400 font-medium ml-2">
             ({activeIndex + 1} of {quotes.length})
@@ -346,8 +492,9 @@ function ComparisonPageContent() {
 
         {/* Footer */}
         <div className="text-center mt-12 text-slate-400 text-sm">
-          <p>Powered by RestoRefine Studios</p>
+          <p>Poweredddd by RestoRefine Studios</p>
         </div>
+        <div>hiiiii</div>
       </div>
     </div>
   );

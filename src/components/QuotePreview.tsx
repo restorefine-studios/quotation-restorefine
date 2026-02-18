@@ -34,14 +34,14 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                   <Image src={quote.clientLogo} alt="Client Logo" fill className="object-contain" />
                 </div>
               )}
-              <h2 className="text-white text-2xl font-black tracking-tight underline decoration-red-600/30 underline-offset-8">{quote.clientName || "Valued Partner"}</h2>
+              <h2 className="text-white text-4xl font-black tracking-tight underline decoration-red-600/30 underline-offset-8">{quote.clientName || "Valued Partner"}</h2>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-600 " />
-              <span className="text-slate-300 text-[12px] font-medium uppercase tracking-widest">Growth Proposal • {new Date().toLocaleDateString("en-GB")}</span>
+              <span className="text-slate-300 text-[16px] font-medium uppercase tracking-widest">Growth Proposal • {new Date().toLocaleDateString("en-GB")}</span>
             </div>
             <h1 className="text-white text-6xl md:text-7xl font-black tracking-tighter leading-[0.85] uppercase max-w-[80%]">{quote.packageName || "Growth Package"}</h1>
             <p className="text-slate-400 text-xl font-medium tracking-wide border-l-4 border-red-600 pl-4 py-1">{quote.subtitle || "Dominate your local market with premium content"}</p>
@@ -62,14 +62,14 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                 <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/20">
                   <Video size={28} />
                 </div>
-                <span className="text-slate-400 font-black uppercase text-[12px] tracking-widest">Video Production</span>
+                <span className="text-slate-400 font-black uppercase text-[14px] tracking-widest">Video Production</span>
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-7xl font-black text-slate-900 tracking-tighter">{quote.videoCount}</span>
                   <span className="text-2xl font-black text-red-600 uppercase italic">Reels</span>
                 </div>
-                <p className="text-slate-500 text-sm font-bold mt-1 tracking-tight">15-30s High-Engagement Vertical Video</p>
+                <p className="text-slate-500 text-lg font-bold mt-1 tracking-tight">15-30s High-Engagement Vertical Video</p>
               </div>
             </div>
           )}
@@ -83,14 +83,14 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
                 <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/20">
                   <Camera size={28} />
                 </div>
-                <span className="text-slate-400 font-black uppercase text-[12px] tracking-widest">Photography</span>
+                <span className="text-slate-400 font-black uppercase text-[14px] tracking-widest">Photography</span>
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-7xl font-black text-slate-900 tracking-tighter">{quote.photoCount}</span>
                   <span className="text-2xl font-black text-red-600 uppercase italic">Frames</span>
                 </div>
-                <p className="text-slate-500 text-sm font-bold mt-1 tracking-tight">Premium Food & Lifestyle Visuals</p>
+                <p className="text-slate-500 text-lg font-bold mt-1 tracking-tight">Premium Food & Lifestyle Visuals</p>
               </div>
             </div>
           )}
@@ -99,36 +99,36 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
         {/* 3. Platforms & Management */}
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-6">
-            <h3 className="text-slate-400 text-lg font-extrabold uppercase tracking-[0.2em] flex items-center gap-2">
+            <h3 className="text-slate-400 text-3xl font-extrabold uppercase tracking-[0.1em] flex items-center gap-2">
               {/* <div className="w-6 h-[2px] bg-red-600" /> */}
               Platform Reach
             </h3>
             <div className="flex flex-wrap gap-3">
               {quote.platforms.map((p) => (
-                <div key={p} className="flex items-center gap-2.5 bg-[#0F172A] text-white px-5 py-3 rounded-2xl text-base font-semibold shadow-xl shadow-slate-900/10 hover:translate-y-[-2px] transition-transform">
-                  {p === "Instagram" ? <Instagram size={16} className="text-white" /> : <Zap size={16} className="text-white" />}
+                <div key={p} className="flex items-center gap-2.5 bg-[#0F172A] text-white px-5 py-3 rounded-2xl text-2xl font-semibold shadow-xl shadow-slate-900/10 hover:translate-y-[-2px] transition-transform">
+                  {p === "Instagram" ? <Instagram size={20} className="text-white" /> : <Zap size={20} className="text-white" />}
                   {p}
                 </div>
               ))}
             </div>
           </div>
           <div className="space-y-6">
-            <h3 className="text-slate-400 text-lg font-extrabold uppercase tracking-[0.2em] flex items-center gap-2">{quote.showManagement !== false ? "Fully Managed Services" : "Management"}</h3>
+            <h3 className="text-slate-400 text-3xl font-extrabold uppercase tracking-[0.1em] flex items-center gap-2">{quote.showManagement !== false ? "Fully Managed Services" : "Management"}</h3>
             {quote.showManagement !== false ? (
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 text-lg text-slate-700 font-semibold ">
+                <div className="flex items-center gap-2 text-3xl text-slate-700 font-semibold ">
                   <CheckCircle2 size={16} className="text-red-600" />
                   Posting
                 </div>
-                <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
+                <div className="flex items-center gap-3 text-3xl text-slate-700 font-semibold ">
                   <CheckCircle2 size={16} className="text-red-600" />
                   Captions
                 </div>
-                <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
+                <div className="flex items-center gap-3 text-3xl text-slate-700 font-semibold ">
                   <CheckCircle2 size={16} className="text-red-600" />
                   Hashtags
                 </div>
-                <div className="flex items-center gap-3 text-lg text-slate-700 font-semibold ">
+                <div className="flex items-center gap-3 text-3xl text-slate-700 font-semibold ">
                   <CheckCircle2 size={16} className="text-red-600" />
                   Analytics
                 </div>
@@ -142,7 +142,7 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
         {/* 4. Add-Ons Section */}
         {quote.addOns.length > 0 && (
           <div className="space-y-6">
-            <h3 className="text-slate-400 text-lg font-extrabold uppercase tracking-[0.2em] flex items-center gap-2">
+            <h3 className="text-slate-400 text-3xl font-extrabold uppercase tracking-[0.1em] flex items-center gap-2">
               {/* <div className="w-6 h-[2px] bg-red-600" /> */}
               Premium Add-ons Available
             </h3>
@@ -150,7 +150,7 @@ export const QuotePreview = forwardRef<HTMLDivElement, QuotePreviewProps>(({ quo
               {quote.addOns.map((addon) => (
                 <div key={addon} className="flex items-center gap-3 bg-red-200/10 p-2 rounded-2xl border border-red-100/50 hover:bg-red-50 transition-colors">
                   <DotIcon size={60} className="text-red-600 shrink-0" />
-                  <span className="text-slate-800 text-base font-bold uppercase tracking-tight">{addon}</span>
+                  <span className="text-slate-800 text-2xl font-bold uppercase tracking-tight">{addon}</span>
                 </div>
               ))}
             </div>

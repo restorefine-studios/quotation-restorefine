@@ -93,3 +93,12 @@ model Quote {
   @@index([userId])
   @@index([createdAt])
 }
+
+model CompareLink {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  quoteIds  Json     // String[]
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}

@@ -155,7 +155,7 @@ export function QuoteDashboard() {
     }
   };
 
-  const handleShareLink = () => {
+  const handleShareLink = async () => {
     // Check if all quotes are saved
     const unsavedQuotes = activeQuotes.filter((q) => !q.id);
     if (unsavedQuotes.length > 0) {
@@ -163,19 +163,32 @@ export function QuoteDashboard() {
       return;
     }
 
-    // Get all quote IDs and create comparison URL
-    const quoteIds = activeQuotes.map((q) => q.id).join(",");
-    const shareUrl = `${window.location.origin}/quote/compare?ids=${quoteIds}`;
+    try {
+      const quoteIds = activeQuotes.map((q) => q.id);
+      const clientName = activeQuotes[0]?.clientName || "client";
 
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareUrl).then(
-      () => {
-        toast.success(`Share link copied! Includes ${activeQuotes.length} package${activeQuotes.length > 1 ? "s" : ""}`);
-      },
-      () => {
-        toast.error("Failed to copy link");
-      },
-    );
+      const res = await fetch("/api/compare-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quoteIds, clientName }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create share link");
+
+      const { slug } = await res.json();
+      const shareUrl = `${window.location.origin}/quote/compare/${slug}`;
+
+      navigator.clipboard.writeText(shareUrl).then(
+        () => {
+          toast.success(`Share link copied! Includes ${activeQuotes.length} package${activeQuotes.length > 1 ? "s" : ""}`);
+        },
+        () => {
+          toast.error("Failed to copy link");
+        },
+      );
+    } catch {
+      toast.error("Failed to generate share link");
+    }
   };
 
   const handleZoomIn = () => {

@@ -173,13 +173,13 @@ function ComparisonPageContent() {
 
               {/* Platforms */}
               <div className="py-4">
-                <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Platforms</p>
+                <p className="sm:text-2xl font-black uppercase tracking-widest text-slate-400 mb-2">Platforms</p>
                 <div className="flex gap-3">
                   {quotes.map((q, idx) => (
                     <div key={q.id || idx} className="flex-1">
                       <div className="flex flex-wrap gap-1">
                         {q.platforms.map((p, pIdx) => (
-                          <span key={p + pIdx} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase">
+                          <span key={p + pIdx} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[15px] font-bold uppercase">
                             {p}
                           </span>
                         ))}
@@ -195,9 +195,7 @@ function ComparisonPageContent() {
                 <div className="flex gap-3">
                   {quotes.map((q, idx) => (
                     <div key={q.id || idx} className="flex-1 text-center">
-                      <span className={`text-sm font-bold ${q.showManagement !== false ? "text-emerald-500" : "text-slate-300"}`}>
-                        {q.showManagement !== false ? "Included" : "—"}
-                      </span>
+                      <span className={`text-sm font-bold ${q.showManagement !== false ? "text-emerald-500" : "text-slate-300"}`}>{q.showManagement !== false ? "Included" : "—"}</span>
                     </div>
                   ))}
                 </div>
@@ -210,11 +208,7 @@ function ComparisonPageContent() {
                   <div className="flex gap-3">
                     {quotes.map((q, idx) => (
                       <div key={q.id || idx} className="flex-1 text-center">
-                        {q.addOns.includes(addon) ? (
-                          <span className="inline-flex w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full items-center justify-center text-xs">✓</span>
-                        ) : (
-                          <span className="text-slate-300 font-bold">—</span>
-                        )}
+                        {q.addOns.includes(addon) ? <span className="inline-flex w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full items-center justify-center text-xs">✓</span> : <span className="text-slate-300 font-bold">—</span>}
                       </div>
                     ))}
                   </div>

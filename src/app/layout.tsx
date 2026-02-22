@@ -21,6 +21,15 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: 'RestoRefine Quote Card',
   description: 'Transform lengthy proposals into sleek, mobile-friendly infographic quotes.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'RestoRefine',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
 }
 
 export default function RootLayout({
@@ -30,6 +39,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geist.variable} ${manrope.variable}`}>
+      <head>
+        <meta name="theme-color" content="#ef4444" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body className="min-h-screen bg-background text-foreground font-sans">
         <Providers>
           <AuthProvider>
